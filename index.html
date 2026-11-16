@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Robo Quest</title>
+<title>Aegis Frame: Shadows of the Vael</title>
 <style>
   :root { --bg:#10151a; --ink:#f4f1e4; --blk:#0b0d12; --yel:#ffd24d; --rust:#c2561b; --u:6px; --pb:92px;
     --f:Impact,"Arial Black","Haettenschweiler","Trebuchet MS",sans-serif; }
@@ -128,8 +128,10 @@
   .gbox p, .savebox p { font-family:"Trebuchet MS",sans-serif; font-weight:bold; letter-spacing:0; font-size:calc(var(--u)*3); }
   .savebox { margin:auto; text-align:center; max-width:min(94vw,600px); }
   #gate { align-items:center; justify-content:center; }
-  #overlay { position:fixed; inset:0; z-index:40; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:calc(var(--u)*1.4); text-align:center; box-sizing:border-box; background:radial-gradient(#2d3d26,#10150f); overflow:auto;
+  #overlay { position:fixed; inset:0; z-index:40; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:calc(var(--u)*1.4); text-align:center; box-sizing:border-box; background:radial-gradient(#2d3d26,#10150f); overflow:auto; padding:calc(var(--u)*1.5) 0;
     padding:calc(env(safe-area-inset-top,0px) + 12px) calc(env(safe-area-inset-right,0px) + 14px) calc(env(safe-area-inset-bottom,0px) + 12px) calc(env(safe-area-inset-left,0px) + 14px); }
+  #overlay::before, #overlay::after { content:''; flex:1 0 0px; }      /* two spacers centre the content when it fits and let it scroll from the top when it does not (justify-content:center would cut the title off) */
+  #overlay h1 small { display:block; margin-top:calc(var(--u)*.6); font-size:.46em; color:#ff9a6a; letter-spacing:.06em; -webkit-text-stroke:calc(var(--u)*.3) #000; text-shadow:0 calc(var(--u)*.5) 0 #000; }
   #overlay h1 { font-size:calc(var(--u)*10.5); margin:0; color:var(--yel); -webkit-text-stroke:calc(var(--u)*.5) #000; text-shadow:0 calc(var(--u)*.7) 0 #7a2a08, 0 calc(var(--u)*1.1) 0 #000; }
   #overlay p { max-width:min(92vw,46ch); margin:0; line-height:1.35; font-size:calc(var(--u)*3); font-family:"Trebuchet MS",sans-serif; font-weight:bold; color:#f1ecd8; text-shadow:0 2px 0 #000; letter-spacing:0; }
   #devRow { font-size:calc(var(--u)*3); font-family:"Trebuchet MS",sans-serif; font-weight:bold; letter-spacing:0; } #devRow input { width:22px; height:22px; vertical-align:middle; margin-right:6px; }
@@ -251,9 +253,9 @@ body.bossOn #qTrack { margin-top:calc(var(--u)*9); }
 
 <div id="layoutBar"><span>Drag the pads and buttons</span><button id="layAccept">✔ Accept</button><button id="layCancel" class="alt">✖ Cancel</button><button id="layReset" class="alt">↺ Reset</button></div>
 <div id="overlay">
-  <h1 id="title">🤖 Robo Quest</h1>
-  <p id="msg">Your robot fights by itself. Finish the missions in each zone to open the portal. Bosses guard the last zone of every act. Watch the red warning shapes on the ground and step out of them!</p>
-  <p id="how">Thumb pad at the bottom left to walk. Tap the big SIEGE button to anchor down: more damage, range and defence, but you cannot move. ⭐ skills · 📊 stats · 💾 save code.</p>
+  <h1 id="title">Aegis Frame<small>Shadows of the Vael</small></h1>
+  <p id="msg">2126. The rifts opened and the Vael came through. You pilot an Aegis Frame, built from captured Vael tech. It fires by itself: finish each zone's missions to open the portal, and avoid the red warning shapes.</p>
+  <p id="how">Thumb pad at the bottom left to walk. Tap the big SIEGE button to anchor down: more damage, range and defence, but you cannot move. ⭐ skills · 📊 stats · 📜 log · 💾 save code.</p>
   <div id="menuBtns"><button id="bNew">🆕 New game</button><button id="bCoop">👥 Couch co-op</button><button id="bCont" class="alt">📂 Continue</button></div>
   <label id="devRow"><input type="checkbox" id="devChk">🛠 Developer mode</label>
   <div id="audRow"></div>
@@ -725,6 +727,7 @@ function audioStart(){
       const ctx = AUD.ctx = new AC(), comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.2;
       AUD.master = ctx.createGain(); AUD.master.gain.value = 0.9; AUD.master.connect(comp); comp.connect(ctx.destination);
       AUD.sfx = ctx.createGain(); AUD.sfx.connect(AUD.master); AUD.mus = ctx.createGain(); AUD.mus.connect(AUD.master);
+      { const dl = ctx.createDelay(2), fb = ctx.createGain(), lp = ctx.createBiquadFilter(), wet = ctx.createGain(); dl.delayTime.value = 0.46; fb.gain.value = 0.5; lp.type = 'lowpass'; lp.frequency.value = 1500; wet.gain.value = 0.55; AUD.mus.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); lp.connect(wet); wet.connect(AUD.master); }      /* an echo on the music: the long, empty-hall tail of a ruined dome */
       const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1; AUD.noise = buf;
       for (const m of ['menu', 'zone', 'boss']){ const g = ctx.createGain(); g.gain.value = 0; g.connect(AUD.mus); MUS.lay[m] = g; }
       applyVol();
@@ -748,7 +751,7 @@ function audioControlsHTML(){
   return row('sfx', '🔊', 'Sound effects', AUD.sfxVol, AUD.sfxMute) + row('mus', '🎵', 'Music', AUD.musVol, AUD.musMute);
 }
 function refreshAudRow(){ const r = $('audRow'); if (r) r.innerHTML = audioControlsHTML(); }
-function renderAudio(){ S.panelKind = 'settings'; panel.innerHTML = '<div class="ph"><b>⚙️ Settings</b><button class="x" onclick="closePanel()">✖</button></div><div class="savebox"><div class="sh2">🔊 Sound & music</div>' + audioControlsHTML() + '<div class="note">Your volume settings are saved in your save code.</div></div>' + saveHTML(); }
+function renderAudio(){ S.panelKind = 'settings'; panel.innerHTML = '<div class="ph"><b>⚙️ Settings</b><button class="x" onclick="closePanel()">✖</button></div><div class="savebox"><div class="sh2">🔊 Sound & music</div>' + audioControlsHTML() + '<div class="note">Your volume settings are saved in your save code.</div></div>' + quitHTML() + saveHTML(); }
 
 // ---- sound building blocks
 function route(node, o){ const ctx = AUD.ctx; let out = node; if (o.pan && ctx.createStereoPanner){ const p = ctx.createStereoPanner(); p.pan.value = clamp(o.pan, -1, 1); node.connect(p); out = p; } out.connect(o.bus || AUD.sfx); }
@@ -773,6 +776,7 @@ function noise(o){
 const mix = (o, e) => Object.assign({ pan: o.pan, pv: o.pv }, e);
 /* metal rings with inharmonic partials: what a struck plate or bar sounds like */
 const clang = (o, f, vol, dur, delay) => [1, 2.76, 5.4].forEach((m, i) => tone(mix(o, { f: f * m, dur: dur / (1 + i * 0.8), vol: vol / (1 + i * 1.3), delay: delay || 0 })));
+const clank = (o, f, vol, delay) => { noise(mix(o, { dur: 0.05, ft: 'bandpass', f, q: 4, vol, delay: delay || 0 })); noise(mix(o, { dur: 0.04, ft: 'bandpass', f: f * 1.7, q: 5, vol: vol * 0.6, delay: (delay || 0) + 0.02 })); };      /* an untuned metal knock: no ringing pitch */
 const crack = (o, vol, delay) => noise(mix(o, { dur: 0.03, ft: 'highpass', f: 3500, vol, delay: delay || 0 }));
 const SND = {
   click: o => { noise({ dur: 0.025, ft: 'bandpass', f: 2600, q: 2, vol: 0.09 }); tone({ f: 220, f2: 110, dur: 0.03, vol: 0.07 }); },
@@ -783,26 +787,26 @@ const SND = {
   ice: o => { crack(o, 0.09); noise(mix(o, { dur: 0.22, ft: 'highpass', f: 5000, f2: 9000, vol: 0.08 })); tone(mix(o, { f: 3100, f2: 2900, dur: 0.3, vol: 0.05 })); tone(mix(o, { f: 4700, dur: 0.18, vol: 0.03, delay: 0.02 })); noise(mix(o, { dur: 0.1, ft: 'lowpass', f: 700, vol: 0.1 })); },
   shockwave: o => { noise(mix(o, { dur: 0.7, ft: 'lowpass', f: 380, f2: 45, vol: 0.5 })); tone(mix(o, { f: 62, f2: 26, dur: 0.7, vol: 0.6 })); noise(mix(o, { dur: 0.12, ft: 'lowpass', f: 1800, f2: 300, vol: 0.3 })); },
   chain: o => { for (let i = 0; i < 5; i++) noise(mix(o, { dur: 0.04, ft: 'bandpass', f: 1800 + Math.random() * 3000, q: 4, vol: 0.13, delay: i * 0.03 + Math.random() * 0.02 })); tone(mix(o, { f: 120, dur: 0.22, type: 'sawtooth', vol: 0.05, cut: 600 })); crack(o, 0.12); },      /* an electric arc: crackle over a mains-frequency buzz */
-  hammer: o => { tone(mix(o, { f: 100, f2: 32, dur: 0.4, vol: 0.65 })); noise(mix(o, { dur: 0.22, ft: 'lowpass', f: 1400, f2: 150, vol: 0.45 })); clang(o, 330, 0.08, 0.5, 0.01); crack(o, 0.12); },
+  hammer: o => { tone(mix(o, { f: 100, f2: 32, dur: 0.4, vol: 0.65 })); noise(mix(o, { dur: 0.22, ft: 'lowpass', f: 1400, f2: 150, vol: 0.45 })); clank(o, 900, 0.14, 0.01); crack(o, 0.12); },
   needler: o => { noise(mix(o, { dur: 0.06, ft: 'highpass', f: 2500, vol: 0.08 })); tone(mix(o, { f: 900, f2: 400, dur: 0.04, type: 'triangle', vol: 0.05 })); },
   needleBeep: o => tone({ f: 1100, dur: 0.05, vol: 0.05 }),
   needlePop: o => { noise(mix(o, { dur: 0.3, ft: 'lowpass', f: 2200, f2: 160, vol: 0.4 })); tone(mix(o, { f: 160, f2: 45, dur: 0.25, vol: 0.5 })); crack(o, 0.14); },
   blades: o => { noise(mix(o, { dur: 0.2, ft: 'bandpass', f: 700, f2: 1700, q: 1.5, vol: 0.07 * (o.a || 1) })); tone(mix(o, { f: 2400, dur: 0.1, vol: 0.012 })); },
   sawHit: o => { noise(mix(o, { dur: 0.06, ft: 'bandpass', f: 2200, q: 2.5, vol: 0.09 })); tone(mix(o, { f: 380, f2: 240, dur: 0.05, type: 'sawtooth', vol: 0.04, cut: 1200 })); },
   hook: o => { noise(mix(o, { dur: 0.2, ft: 'bandpass', f: 1500, f2: 4000, q: 1, vol: 0.12 })); for (let i = 0; i < 6; i++) noise(mix(o, { dur: 0.025, ft: 'bandpass', f: 3000 + Math.random() * 2500, q: 6, vol: 0.1, delay: i * 0.035 })); },      /* a chain paying out */
-  hookHit: o => { tone(mix(o, { f: 80, f2: 34, dur: 0.3, vol: 0.6 })); noise(mix(o, { dur: 0.15, ft: 'lowpass', f: 900, vol: 0.3 })); clang(o, 420, 0.07, 0.4); },
+  hookHit: o => { tone(mix(o, { f: 80, f2: 34, dur: 0.3, vol: 0.6 })); noise(mix(o, { dur: 0.15, ft: 'lowpass', f: 900, vol: 0.3 })); clank(o, 700, 0.14); },
   // power button
   pwrStart: o => { tone({ f: 180, f2: 340, dur: 0.18, vol: 0.07 }); noise({ dur: 0.04, ft: 'bandpass', f: 1800, q: 3, vol: 0.07 }); },
   pwrStage: o => { const s = o.a || 1; noise({ dur: 0.04, ft: 'bandpass', f: 1800 + s * 300, q: 4, vol: 0.12 }); tone({ f: 300 + s * 90, f2: 340 + s * 110, dur: 0.18, type: 'sawtooth', vol: 0.05, cut: 1200 + s * 300 }); },      /* a relay closes and the capacitor whine climbs */
   pwrAlarm: o => tone({ f: 620, dur: 0.1, type: 'sawtooth', vol: 0.06, cut: 1400 }),
   pwrBlast: o => { const k = clamp(0.5 + (o.a || 1) / 30, 0.5, 1.2); noise({ dur: 0.9, ft: 'lowpass', f: 4000, f2: 80, vol: 0.55 * k }); tone({ f: 120, f2: 30, dur: 0.8, type: 'sawtooth', vol: 0.4 * k, cut: 500 }); for (let i = 0; i < 5; i++) noise({ dur: 0.04, ft: 'highpass', f: 3500, vol: 0.12, delay: i * 0.05 }); crack({}, 0.2); },
-  pwrBreak: o => { noise({ dur: 0.2, ft: 'highpass', f: 3000, vol: 0.3 }); for (let i = 0; i < 4; i++) noise({ dur: 0.03, ft: 'bandpass', f: 2500 + Math.random() * 2000, q: 4, vol: 0.12, delay: 0.05 + i * 0.04 }); tone({ f: 900, f2: 90, dur: 0.25, type: 'sawtooth', vol: 0.12, cut: 1500 }); clang({}, 700, 0.06, 0.3, 0.1); },
+  pwrBreak: o => { noise({ dur: 0.2, ft: 'highpass', f: 3000, vol: 0.3 }); for (let i = 0; i < 4; i++) noise({ dur: 0.03, ft: 'bandpass', f: 2500 + Math.random() * 2000, q: 4, vol: 0.12, delay: 0.05 + i * 0.04 }); tone({ f: 900, f2: 90, dur: 0.25, type: 'sawtooth', vol: 0.12, cut: 1500 }); clank({}, 1500, 0.1, 0.1); },
   // enemies
   hit: o => { noise(mix(o, { dur: 0.04, ft: 'bandpass', f: 1500, q: 3, vol: 0.1 })); tone(mix(o, { f: 480, f2: 300, dur: 0.04, vol: 0.06 })); },
   die_shatter: o => { for (let i = 0; i < 8; i++) tone(mix(o, { f: 2500 + Math.random() * 3500, dur: 0.1, vol: 0.05, delay: Math.random() * 0.12 })); noise(mix(o, { dur: 0.25, ft: 'highpass', f: 6000, vol: 0.18 })); },
   die_burn: o => { noise(mix(o, { dur: 0.6, ft: 'lowpass', f: 1400, f2: 250, vol: 0.25 })); for (let i = 0; i < 5; i++) noise(mix(o, { dur: 0.03, ft: 'highpass', f: 3000, vol: 0.12, delay: Math.random() * 0.5 })); },
   die_crumble: o => { noise(mix(o, { dur: 0.6, ft: 'lowpass', f: 700, f2: 120, vol: 0.35 })); tone(mix(o, { f: 70, f2: 38, dur: 0.35, vol: 0.35 })); for (let i = 0; i < 5; i++) noise(mix(o, { dur: 0.04, ft: 'bandpass', f: 1500 + Math.random() * 2000, q: 3, vol: 0.09, delay: 0.1 + i * 0.07 })); },
-  die_slice: o => { noise(mix(o, { dur: 0.16, ft: 'highpass', f: 2500, f2: 7000, vol: 0.25 })); clang(o, 1800, 0.03, 0.3); },
+  die_slice: o => { noise(mix(o, { dur: 0.16, ft: 'highpass', f: 2500, f2: 7000, vol: 0.25 })); clank(o, 2200, 0.1); },
   die_shock: o => { noise(mix(o, { dur: 0.25, ft: 'bandpass', f: 1800, q: 2, vol: 0.12 })); for (let i = 0; i < 3; i++) noise(mix(o, { dur: 0.03, ft: 'highpass', f: 3500, vol: 0.1, delay: i * 0.06 })); tone(mix(o, { f: 60, dur: 0.2, type: 'sawtooth', vol: 0.1, cut: 400 })); },
   die_fall: o => { tone(mix(o, { f: 110, f2: 45, dur: 0.3, vol: 0.35 })); noise(mix(o, { dur: 0.15, ft: 'lowpass', f: 500, vol: 0.15 })); for (let i = 0; i < 3; i++) noise(mix(o, { dur: 0.04, ft: 'bandpass', f: 1200 + Math.random() * 1500, q: 4, vol: 0.08, delay: 0.12 + i * 0.07 })); },
   warn: o => tone(mix(o, { f: 420, f2: 370, dur: 0.16, type: 'sawtooth', vol: 0.06, cut: 1100 })),
@@ -817,20 +821,20 @@ const SND = {
     noise(mix(o, { dur: 2.2, ft: 'lowpass', f: 500, f2: 50, vol: 0.32, delay: 0.2 })); clang(o, 85, 0.22, 2.4, 0.5);      /* the frame comes apart and the wreck rings out: no fanfare */
   },
   // you
-  hurt: o => { noise({ dur: 0.14, ft: 'lowpass', f: 900, vol: 0.3 }); tone({ f: 130, f2: 55, dur: 0.22, vol: 0.5 }); noise({ dur: 0.06, ft: 'highpass', f: 3000, vol: 0.1 }); clang({}, 520, 0.05, 0.25); },
+  hurt: o => { noise({ dur: 0.14, ft: 'lowpass', f: 900, vol: 0.3 }); tone({ f: 130, f2: 55, dur: 0.22, vol: 0.5 }); noise({ dur: 0.06, ft: 'highpass', f: 3000, vol: 0.1 }); clank({}, 800, 0.12, 0.02); },
   lose: o => { tone({ f: 220, f2: 24, dur: 1.4, type: 'sawtooth', vol: 0.25, cut: 500 }); noise({ dur: 1.2, ft: 'lowpass', f: 900, f2: 60, vol: 0.2 }); tone({ f: 1800, f2: 120, dur: 0.9, vol: 0.05, delay: 0.1 }); },      /* the power fails and the frame winds down */
   shieldUp: o => { noise({ dur: 0.35, ft: 'bandpass', f: 300, f2: 1800, q: 2, vol: 0.1 }); tone({ f: 200, f2: 520, dur: 0.35, vol: 0.06 }); },
   shieldFull: o => { tone({ f: 640, dur: 0.25, vol: 0.05, attack: 0.05 }); noise({ dur: 0.03, ft: 'bandpass', f: 2400, q: 3, vol: 0.07 }); },
   heart: o => { tone({ f: 65, f2: 45, dur: 0.12, vol: 0.5 }); tone({ f: 60, f2: 42, dur: 0.12, vol: 0.4, delay: 0.18 }); },
-  healOrb: o => { noise(mix(o, { dur: 0.03, ft: 'bandpass', f: 2200, q: 3, vol: 0.06 })); clang(o, 560, 0.06, 0.35); },
-  shieldOrb: o => { noise(mix(o, { dur: 0.15, ft: 'highpass', f: 4500, f2: 7000, vol: 0.05 })); clang(o, 760, 0.06, 0.3); },
-  bubble: o => { const g = o.a || 0, base = [480, 560, 680, 820][g]; for (let i = 0; i <= g; i++) clang({}, base * (1 + 0.25 * i), 0.08, 0.45, i * 0.09); if (g >= 2) noise({ dur: 0.4, ft: 'highpass', f: 6000, vol: 0.05, delay: 0.1 }); },
-  uniqueDrop: o => { clang({}, 220, 0.14, 1.6); clang({}, 330, 0.1, 1.4, 0.12); noise({ dur: 0.8, ft: 'highpass', f: 6500, vol: 0.05, delay: 0.2 }); },
-  level: o => { tone({ f: 110, f2: 220, dur: 0.9, type: 'sawtooth', vol: 0.12, cut: 900, attack: 0.3 }); tone({ f: 165, f2: 330, dur: 0.9, type: 'sawtooth', vol: 0.08, cut: 900, attack: 0.3 }); noise({ dur: 0.6, ft: 'bandpass', f: 600, f2: 3500, q: 1, vol: 0.08 }); clang({}, 440, 0.08, 1.2, 0.5); },
+  healOrb: o => { noise(mix(o, { dur: 0.18, ft: 'bandpass', f: 500, f2: 1100, q: 1.2, vol: 0.12 })); tone(mix(o, { f: 190, f2: 260, dur: 0.16, vol: 0.08, attack: 0.04 })); },      /* a soft repair swell, no ping */
+  shieldOrb: o => { noise(mix(o, { dur: 0.2, ft: 'bandpass', f: 900, f2: 2200, q: 1.2, vol: 0.11 })); tone(mix(o, { f: 240, f2: 340, dur: 0.18, vol: 0.07, attack: 0.05 })); },
+  bubble: o => { const g = o.a || 0; for (let i = 0; i <= g; i++){ noise({ dur: 0.2, ft: 'bandpass', f: 400 + g * 120 + i * 250, f2: 900 + g * 200 + i * 300, q: 1.4, vol: 0.12, delay: i * 0.08 }); tone({ f: 150 + g * 30 + i * 40, f2: 230 + g * 30 + i * 50, dur: 0.2, vol: 0.07, attack: 0.04, delay: i * 0.08 }); } },      /* a power-up charging a cell: a rising swell, never a bell */
+  uniqueDrop: o => { tone({ f: 80, f2: 160, dur: 1.2, type: 'sawtooth', vol: 0.12, cut: 700, attack: 0.4 }); tone({ f: 120, f2: 240, dur: 1.2, type: 'sawtooth', vol: 0.07, cut: 800, attack: 0.4 }); noise({ dur: 1.0, ft: 'bandpass', f: 500, f2: 3000, q: 1, vol: 0.09 }); },
+  level: o => { tone({ f: 110, f2: 220, dur: 0.9, type: 'sawtooth', vol: 0.12, cut: 900, attack: 0.3 }); tone({ f: 165, f2: 330, dur: 0.9, type: 'sawtooth', vol: 0.08, cut: 900, attack: 0.3 }); noise({ dur: 0.6, ft: 'bandpass', f: 600, f2: 3500, q: 1, vol: 0.08 }); tone({ f: 220, f2: 330, dur: 0.8, type: 'sawtooth', vol: 0.06, cut: 900, attack: 0.3, delay: 0.4 }); },
   portalTick: o => { noise({ dur: 0.03, ft: 'bandpass', f: 900, q: 3, vol: 0.1 }); tone({ f: 300, dur: 0.06, vol: 0.07 }); },
   portalGo: o => { noise({ dur: 0.6, ft: 'bandpass', f: 200, f2: 3500, q: 1.5, vol: 0.3 }); tone({ f: 70, f2: 200, dur: 0.6, vol: 0.25 }); },
   portalLock: o => { tone({ f: 130, dur: 0.12, type: 'sawtooth', vol: 0.2, cut: 400 }); tone({ f: 120, dur: 0.14, type: 'sawtooth', vol: 0.2, cut: 400, delay: 0.16 }); },
-  portalOpen: o => { tone({ f: 70, f2: 55, dur: 0.5, vol: 0.5 }); noise({ dur: 0.25, ft: 'lowpass', f: 900, vol: 0.3 }); clang({}, 260, 0.1, 1.2, 0.1); tone({ f: 90, f2: 180, dur: 0.9, type: 'sawtooth', vol: 0.08, cut: 600, delay: 0.2 }); noise({ dur: 0.6, ft: 'highpass', f: 6000, vol: 0.05, delay: 0.3 }); },      /* a heavy latch lets go and the gate hums up */
+  portalOpen: o => { tone({ f: 70, f2: 55, dur: 0.5, vol: 0.5 }); noise({ dur: 0.25, ft: 'lowpass', f: 900, vol: 0.3 }); clank({}, 500, 0.14, 0.1); tone({ f: 90, f2: 180, dur: 0.9, type: 'sawtooth', vol: 0.08, cut: 600, delay: 0.2 }); noise({ dur: 0.6, ft: 'highpass', f: 6000, vol: 0.05, delay: 0.3 }); },      /* a heavy latch lets go and the gate hums up */
   step: o => { tone(mix(o, { f: 85, f2: 48, dur: 0.08, vol: 0.14 })); noise(mix(o, { dur: 0.06, ft: 'bandpass', f: 1100, q: 1.5, vol: 0.07 })); }
 };
 const LIM = { hit: 0.06, laser: 0.05, step: 0.1, warn: 0.14, boom: 0.05, needlePop: 0.06, chain: 0.08, blades: 0.2, sawHit: 0.08, needleBeep: 0.04, click: 0.05, healOrb: 0.1 }, LOWP = new Set(['hit', 'step', 'warn', 'sawHit', 'blades']);
@@ -857,46 +861,45 @@ function audioFrame(dt, mag){
   const f = P.hp / P.maxHp; if (f < 0.3 && f > 0){ AUD.hbT -= dt; if (AUD.hbT <= 0){ AUD.hbT = 0.5 + f * 2; snd('heart'); } }       // heartbeat when life is low
 }
 
-// ---- music: slow, dark and sombre. A drifting pad over a low drone, a deep war drum, a thin lonely melody and a tolling bell; bosses add a pulsing bass and heavier drums
+// ---- music: desolate and sad, in the manner of a ruined future dome: a slow airy pad, a humming machine and wind, a soft arpeggio, one lonely voice that sings a few long notes, and an echo that carries it all. No bells, no marching. Bosses are mid-range and tense so they carry on a phone speaker
 const parseBar = s => [...s.replace(/[\s|]/g, '')].map(c => c === '.' ? -1 : parseInt(c, 16));
 const MT = [
-  { name: 'requiem', key: 45, scale: [0, 2, 3, 5, 7, 8, 10], bpm: 60, tim: 'cello', ch: [[0, 3, 7, 12], [8, 12, 15, 19], [5, 8, 12, 15], [7, 10, 14, 17]], lead: ['0... .... 2... ....', '4... .... 3... 2...', '3... .... 5... ....', '4... 2... 0... ....'] },
-  { name: 'dust',    key: 38, scale: [0, 1, 3, 5, 7, 8, 10], bpm: 56, tim: 'reed',  ch: [[0, 3, 7, 12], [1, 5, 8, 13], [0, 3, 7, 12], [10, 14, 17, 22]], lead: ['0... 1... 0... ....', '.... .... 3... 1...', '4... .... 3... 1...', '0... .... .... ....'] },
-  { name: 'frost',   key: 40, scale: [0, 1, 3, 5, 6, 8, 10], bpm: 52, tim: 'bell',  ch: [[0, 3, 7, 12], [0, 3, 6, 12], [8, 12, 15, 19], [7, 10, 13, 17]], lead: ['4... .... .... ....', '3... .... 1... ....', '4... .... 6... ....', '5... 3... 1... ....'] },
-  { name: 'ash',     key: 37, scale: [0, 1, 4, 5, 7, 8, 10], bpm: 66, tim: 'cello', ch: [[0, 3, 7, 12], [0, 3, 7, 10], [1, 5, 8, 13], [0, 3, 6, 12]], lead: ['0... 1... .... 0...', '.... .... 2... ....', '3... .... 2... 1...', '0... .... .... ....'] },
-  { name: 'iron',    key: 41, scale: [0, 2, 3, 5, 7, 8, 10], bpm: 68, tim: 'organ', ch: [[0, 3, 7, 12], [0, 3, 7, 12], [5, 8, 12, 15], [3, 7, 10, 15]], lead: ['0... .... 0... 2...', '3... .... 2... ....', '5... .... 4... 3...', '2... .... 0... ....'] }
+  { name: 'dome',  key: 45, scale: [0, 2, 3, 5, 7, 8, 10], bpm: 50, tim: 'lone', ch: [[0, 3, 7, 10], [8, 12, 15, 19], [5, 8, 12, 15], [7, 10, 14, 17]], lead: ['0... .... .... 2...', '4... .... 3... ....', '2... .... 3... 5...', '4... .... 0... ....'] },
+  { name: 'dust',  key: 38, scale: [0, 1, 3, 5, 7, 8, 10], bpm: 46, tim: 'reed', ch: [[0, 3, 7, 12], [1, 5, 8, 13], [0, 3, 7, 12], [10, 14, 17, 22]], lead: ['0... .... 1... 0...', '.... .... 3... ....', '4... .... 3... 1...', '0... .... .... ....'] },
+  { name: 'frost', key: 40, scale: [0, 1, 3, 5, 6, 8, 10], bpm: 44, tim: 'lone', ch: [[0, 3, 7, 12], [0, 3, 6, 12], [8, 12, 15, 19], [7, 10, 13, 17]], lead: ['4... .... .... 5...', '3... .... 1... ....', '4... .... 6... ....', '5... .... 3... 1...'] },
+  { name: 'ash',   key: 37, scale: [0, 1, 4, 5, 7, 8, 10], bpm: 52, tim: 'lone', ch: [[0, 3, 7, 12], [0, 3, 7, 10], [1, 5, 8, 13], [0, 3, 6, 12]], lead: ['0... 1... .... 0...', '.... .... 2... ....', '3... .... 2... 1...', '0... .... .... ....'] },
+  { name: 'iron',  key: 41, scale: [0, 2, 3, 5, 7, 8, 10], bpm: 54, tim: 'reed', ch: [[0, 3, 7, 12], [0, 3, 7, 12], [5, 8, 12, 15], [3, 7, 10, 15]], lead: ['0... .... 0... 2...', '3... .... 2... ....', '5... .... 4... 3...', '2... .... 0... ....'] }
 ];
-const BOSSM = { scale: [0, 1, 3, 5, 6, 8, 11], mul: 1.35, lead: ['0... .1.. 0... ....', '3... .4.. 3... ....', '5... .6.. 5... 6...', '6... 4... 3... 1...'] };
+const BOSSM = { scale: [0, 1, 3, 5, 6, 8, 11], mul: 1.55, lead: ['0... .1.. 0... ....', '3... .4.. 3... ....', '5... .6.. 5... 6...', '6... 4... 3... 1...'] };
 MT.forEach(t => { t.leadP = t.lead.map(parseBar); }); BOSSM.leadP = BOSSM.lead.map(parseBar);
 function mnote(o, at, bus){ o.at = at; o.bus = bus; tone(o); }
-function bellNote(n, at, bus, sd){ const f = hz(n); [[1, 0.1, 12], [2.76, 0.04, 7], [5.4, 0.02, 4]].forEach(p => mnote({ f: f * p[0], dur: sd * p[2], vol: p[1] }, at, bus)); }      /* a tolling bell: inharmonic partials with a long fade */
 function leadNote(n, at, bus, tim, sd){
-  if (tim === 'bell') return bellNote(n + 24, at, bus, sd);
   const f = hz(n + 12);
-  if (tim === 'cello') mnote({ f, dur: sd * 8, type: 'sawtooth', vol: 0.085, cut: 1000, vib: 4.5, attack: 0.3 }, at, bus);
-  else if (tim === 'reed') mnote({ f, dur: sd * 6, type: 'sawtooth', vol: 0.075, cut: 1300, vib: 5, attack: 0.15 }, at, bus);
-  else if (tim === 'organ'){ mnote({ f, dur: sd * 8, type: 'sine', vol: 0.09, attack: 0.25 }, at, bus); mnote({ f: f * 2, dur: sd * 8, type: 'triangle', vol: 0.04, attack: 0.25 }, at, bus); }
-  else { mnote({ f, dur: sd * 3, type: 'sawtooth', vol: 0.1, cut: 1400, attack: 0.02 }, at, bus); mnote({ f: f * 1.0595, dur: sd * 3, type: 'sawtooth', vol: 0.05, cut: 1200, attack: 0.02 }, at, bus); }      /* boss: a stab with a flat second against it */
+  if (tim === 'lone'){ mnote({ f, dur: sd * 10, type: 'sine', vol: 0.11, vib: 4.5, attack: 0.5 }, at, bus); mnote({ f: f * 2, dur: sd * 8, type: 'triangle', vol: 0.025, vib: 4.5, attack: 0.6 }, at, bus); }      /* one lonely voice: a slow sine with a gentle vibrato */
+  else if (tim === 'reed') mnote({ f, dur: sd * 8, type: 'sawtooth', vol: 0.06, cut: 1100, vib: 5, attack: 0.4 }, at, bus);
+  else { mnote({ f, dur: sd * 3, type: 'sawtooth', vol: 0.14, cut: 1500, attack: 0.02 }, at, bus); mnote({ f: f * 1.0595, dur: sd * 3, type: 'sawtooth', vol: 0.07, cut: 1300, attack: 0.02 }, at, bus); }      /* boss: a stab with a flat second against it */
 }
 function schedStep(step, at){
   const m = MUS.mode, T = MT[MUS.theme % MT.length], boss = m === 'boss', bar = (step >> 4) & 3, s = step & 15, bus = MUS.lay[m]; if (!bus) return;
   const sd = 60 / MUS.bpm / 4, barT = sd * 16, key = boss ? T.key - 2 : T.key, v = m === 'menu' ? 0.55 : 1, ch = T.ch[bar];
-  if (s === 0){      /* the pad swells under each bar, with a low drone beneath it */
-    ch.forEach((n, i) => mnote({ f: hz(key + 12 + n) * (i % 2 ? 1.004 : 0.996), dur: barT * 1.08, type: 'sawtooth', vol: (boss ? 0.042 : 0.05) * v, cut: boss ? 480 : 700, attack: barT * 0.42 }, at, bus));
-    mnote({ f: hz(key - 12 + ch[0]), dur: barT * 1.06, type: 'sine', vol: 0.32 * v, attack: barT * 0.2 }, at, bus);
+  if (s === 0){
+    ch.forEach((n, i) => mnote({ f: hz(key + 12 + n) * (i % 2 ? 1.003 : 0.997), dur: barT * 1.1, type: i % 2 ? 'triangle' : 'sine', vol: (boss ? 0.05 : 0.07) * v, attack: barT * 0.45 }, at, bus));      /* the airy pad */
+    mnote({ f: hz(key + ch[0]), dur: barT * 1.08, type: 'sawtooth', vol: 0.035 * v, cut: 420, attack: barT * 0.3 }, at, bus);      /* the hum of a machine that never stopped (mid-range, so a phone can play it) */
+    mnote({ f: hz(key + 12 + ch[0]), dur: barT * 1.06, type: 'sine', vol: 0.1 * v, attack: barT * 0.25 }, at, bus); mnote({ f: hz(key - 12 + ch[0]), dur: barT * 1.06, type: 'sine', vol: 0.14 * v, attack: barT * 0.25 }, at, bus);
+    noise({ dur: barT * 1.1, ft: 'bandpass', f: 380, f2: 820, q: 0.8, vol: 0.05 * v, attack: barT * 0.4, at, bus });      /* wind through the broken dome */
   }
-  if (m === 'menu'){ if (s === 0 && bar === 0) bellNote(key + 24 + ch[0], at, bus, sd); return; }
+  if (m === 'menu') return;
   if (!boss){
-    if (s === 0 && bar % 2 === 0){ mnote({ f: 95, f2: 34, dur: 0.75, vol: 0.55 }, at, bus); noise({ dur: 0.4, ft: 'lowpass', f: 320, f2: 55, vol: 0.22, at, bus }); }      /* a deep, slow war drum every other bar */
-    if (s === 8 && bar === 3) mnote({ f: 80, f2: 32, dur: 0.6, vol: 0.3 }, at, bus);
-    if (s === 0 && (bar === 0 || (T.tim === 'bell' && bar === 2))) bellNote(key + 24 + ch[0], at, bus, sd);
-    if (T.name === 'ash' && s % 4 === 0) mnote({ f: hz(key - 24), dur: sd * 2.5, type: 'sine', vol: 0.2 }, at, bus);      /* a slow pulse under the ash */
-    if (T.name === 'iron' && (s === 4 || s === 12) && bar % 2) noise({ dur: 0.1, ft: 'bandpass', f: 2200, q: 6, vol: 0.05, at, bus });      /* a distant clank */
+    if (s % 4 === 0) mnote({ f: hz(key + 12 + ch[((s >> 2) + bar) % ch.length]), dur: sd * 5, type: 'triangle', vol: 0.05, cut: 1100, attack: 0.09 }, at, bus);      /* a soft, slow arpeggio: swelling notes, never plinks */
+    if (s === 0 && bar % 2 === 0){ mnote({ f: 140, f2: 70, dur: 0.5, vol: 0.2 }, at, bus); noise({ dur: 0.3, ft: 'lowpass', f: 500, f2: 120, vol: 0.12, at, bus }); }      /* a distant machine thump */
+    if (T.name === 'ash' && s % 8 === 0) mnote({ f: hz(key), dur: sd * 3, type: 'sine', vol: 0.16 }, at, bus);      /* a slow pulse under the ash */
+    if (T.name === 'iron' && s === 6 && bar % 2) noise({ dur: 0.1, ft: 'bandpass', f: 1800, q: 4, vol: 0.035, at, bus });      /* a distant, muffled clank */
   } else {
-    if (s % 2 === 0) mnote({ f: hz(key - 12 + (s % 8 === 6 ? 1 : 0)), dur: sd * 1.8, type: 'sawtooth', vol: 0.17, cut: 420 }, at, bus);      /* a pulsing bass: the root with a flat ninth */
-    if (s === 0 || s === 6 || s === 10){ mnote({ f: 105, f2: 36, dur: 0.5, vol: 0.62 }, at, bus); noise({ dur: 0.25, ft: 'lowpass', f: 400, f2: 70, vol: 0.28, at, bus }); }
-    if (s === 4 || s === 12) noise({ dur: 0.18, ft: 'bandpass', f: 900, q: 1.2, vol: 0.2, at, bus });
-    if (s === 8 && bar % 2 === 0) [1, 2.76, 5.4].forEach((k2, i) => mnote({ f: 90 * k2, dur: sd * 10 / (1 + i), vol: 0.1 / (1 + i) }, at, bus));
+    if (s % 2 === 0) mnote({ f: hz(key + (s % 8 === 6 ? 1 : 0)), dur: sd * 1.6, type: 'sawtooth', vol: 0.15, cut: 1100 }, at, bus);      /* a pulsing ostinato in the mid-range: the root with a flat ninth */
+    if (s % 4 === 2) mnote({ f: hz(key + 12 + (bar % 2 ? 6 : 0)), dur: sd * 1.2, type: 'sawtooth', vol: 0.05, cut: 1500 }, at, bus);
+    if (s === 0 || s === 6 || s === 10){ mnote({ f: 150, f2: 60, dur: 0.45, vol: 0.5 }, at, bus); noise({ dur: 0.3, ft: 'lowpass', f: 900, f2: 120, vol: 0.35, at, bus }); }
+    if (s === 4 || s === 12) noise({ dur: 0.16, ft: 'bandpass', f: 1400, q: 0.9, vol: 0.28, at, bus });
+    if (s === 0) mnote({ f: hz(key + 12 + ch[0]), dur: barT, type: 'sawtooth', vol: 0.05, cut: 900, vib: 8, attack: barT * 0.5 }, at, bus);      /* tremolo strings rising */
   }
   const d = (boss ? BOSSM : T).leadP[bar][s]; if (d >= 0){ const sc = boss ? BOSSM.scale : T.scale; leadNote(key + sc[d % 7] + 12 * ((d / 7) | 0), at, bus, boss ? 'saw' : T.tim, sd); }
 }
@@ -907,7 +910,7 @@ function musicTick(){
 }
 function musicMode(mode){
   if (!AUD.ctx || mode === MUS.mode) return; const t = AUD.ctx.currentTime;
-  for (const k of ['menu', 'zone', 'boss']){ const g = MUS.lay[k].gain; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(k === mode ? (k === 'menu' ? 0.7 : 1) : 0, t + (k === mode ? 0.6 : 1.1)); }
+  for (const k of ['menu', 'zone', 'boss']){ const g = MUS.lay[k].gain; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(k === mode ? (k === 'menu' ? 0.7 : k === 'boss' ? 1.7 : 1) : 0, t + (k === mode ? 0.6 : 1.1)); }
   MUS.mode = mode; MUS.step = 0; MUS.bpm = mode === 'boss' ? MT[MUS.theme].bpm * BOSSM.mul : mode === 'menu' ? 54 : MT[MUS.theme].bpm; MUS.next = Math.max(MUS.next, t + 0.1);
 }
 function musicTheme(i){ const changed = MUS.theme !== i; MUS.theme = i; if (MUS.mode === 'zone') MUS.bpm = MT[i].bpm; else if (MUS.mode === 'boss') MUS.bpm = MT[i].bpm * BOSSM.mul; if (changed && MUS.mode !== 'off') duck(0.25, 1.2); }
@@ -3107,13 +3110,13 @@ function talkBlip(it){
   if (it.sp === 'X' || it.card){ noise({ dur: 0.02, ft: 'bandpass', f: 2800, q: 3, vol: 0.035 }); return; }      /* narration and story cards: a soft typewriter tick */
   const v = TALK[it.sp] || TALK.S; let b = v[0]; if (it.sp === 'S') b *= 0.8 + ((PT.seed * 0.37) % 1) * 0.6;
   const f = b * (PT.exc ? 1.12 : 1) * (1 + (Math.random() - 0.5) * 2 * v[3]);
-  tone({ f, f2: f * (0.94 + Math.random() * 0.1), dur: 0.075, type: v[1], vol: 0.075 * (PT.exc ? 1.25 : 1), cut: v[2], attack: 0.004 });
+  tone({ f, f2: f * (0.94 + Math.random() * 0.1), dur: 0.095, type: v[1], vol: 0.075 * (PT.exc ? 1.25 : 1), cut: v[2], attack: 0.004 });
   if (it.sp === 'K' || it.sp === 'T') tone({ f: f * 0.5, dur: 0.075, type: 'sine', vol: 0.05 });      /* a deeper voice under the Vael */
   if (it.sp === 'E' || it.sp === 'H') noise({ dur: 0.05, ft: 'highpass', f: 4000, vol: 0.012 });      /* radio hiss */
 }
 function talkRun(c0, c1){
-  const it = DLG.cur; if (!it || !AUD.ctx) return; const now = AUD.ctx.currentTime, every = (it.sp === 'X' || it.card) ? 3 : 2;
-  for (let i = c0; i < c1; i++){ const ch = it.ptx[i]; if (!ch || !/[A-Za-z0-9]/.test(ch)) continue; DLG.bc = (DLG.bc || 0) + 1; if (DLG.bc % every) continue; if (now - (DLG.bt || 0) < 0.05) continue; DLG.bt = now; talkBlip(it); }
+  const it = DLG.cur; if (!it || !AUD.ctx) return; const now = AUD.ctx.currentTime, nar = it.sp === 'X' || it.card, every = 3, gap = nar ? 0.05 : 0.12;      /* spoken lines: a slow blip every third letter, about 8 a second */
+  for (let i = c0; i < c1; i++){ const ch = it.ptx[i]; if (!ch || !/[A-Za-z0-9]/.test(ch)) continue; DLG.bc = (DLG.bc || 0) + 1; if (DLG.bc % every) continue; if (now - (DLG.bt || 0) < gap) continue; DLG.bt = now; talkBlip(it); }
 }
 function talkFade(dt){      /* the music sinks while someone is talking (less for narration) and comes back when the line is done */
   const nar = DLG.cur && (DLG.cur.sp === 'X' || DLG.cur.card), tg = S.phase === 'talk' && DLG.cur ? (nar ? 0.3 : 0.06) : 1, k = AUD.talkF;
@@ -3990,6 +3993,20 @@ function slotTap(i){
 function slotDel(i){
   if (slotArm !== 100 + i){ slotArm = 100 + i; renderSlots(); return; }
   const a = slotsGet(); a[i] = null; slotsPut(a); if (S.slot === i) S.slot = null; slotArm = -1; renderSlots();
+}
+
+/* ---- quit to the main menu (from the settings panel) ---- */
+const MENU_TXT = { title: $('title').innerHTML, msg: $('msg').textContent, how: $('how').textContent };      /* the splash screen as it first loads: the death screen reuses these elements, so they are put back on every return */
+function quitHTML(){ return '<div class="savebox"><div class="sh2">\uD83D\uDEAA Quit</div><div id="quitBox">' + quitInner(false) + '</div></div>'; }
+function quitInner(ask){ const sv = S.slot != null ? 'Your character and your last checkpoint are saved to slot ' + (S.slot + 1) + ' first.' : 'This game has no save slot, so copy your save code below first or this progress is lost.'; return ask ? '<p>Quit to the main menu? ' + sv + '</p><button class="no" onclick="quitToMenu()">Yes, quit</button><button class="alt" onclick="quitAsk(false)">Stay</button>' : '<p>Return to the main menu. ' + sv + '</p><button class="no" onclick="quitAsk(true)">Quit to main menu</button>'; }
+function quitAsk(on){ const b = $('quitBox'); if (b) b.innerHTML = quitInner(on); }
+function quitToMenu(){
+  if (!Z.test) autoSave();
+  panel.style.display = 'none'; gate.style.display = 'none'; S.dlg = null; dlgReset(); releaseSwing(); eachP(() => { siegeReset(); });
+  clearZone(); if (PL.length > 1) leaveCoop();
+  S.phase = 'menu'; S.skillMode = 'game'; S.panelKind = null; slotBack();
+  $('title').innerHTML = MENU_TXT.title; $('msg').textContent = MENU_TXT.msg; $('how').textContent = MENU_TXT.how; $('how').style.display = ''; $('btn').style.display = 'none'; $('slotBox').style.display = 'none';
+  $('overlay').style.display = 'flex'; musicMode('menu'); snd('click');
 }
 $('bNew').onclick = () => openSlots('new'); $('bCoop').onclick = () => openSlots('coop');
 $('bCont').onclick = () => openSlots('load');
